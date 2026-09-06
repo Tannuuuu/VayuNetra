@@ -188,7 +188,17 @@ VayuNetra/
 
 ## ⚙️ Quickstart & Local Setup
 
-### Prerequisites
+### Docker (recommended — zero local Python setup)
+
+```bash
+docker compose up --build
+# or plain Docker:
+docker build -t vayunetra . && docker run -p 8000:8000 vayunetra
+```
+
+Then open **http://localhost:8000/dashboard**.
+
+### Prerequisites (non-Docker)
 - Python 3.10, 3.11, 3.12, or 3.13
 - Git
 
