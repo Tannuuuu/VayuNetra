@@ -285,5 +285,4 @@ In accordance with the [VaayuNetra Product Specification](docs/product-spec.md):
 
 ## 👥 Contributors
 
-- **Team VaayuNetra** — Smart India Hackathon (SIH)
-- Built with ❤️ for cleaner air, transparent governance, and public health intelligence.
+- Tarun Tanmay ~Team Syntax Sorcery
