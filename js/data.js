@@ -351,6 +351,7 @@ let REGIONS = [
   { name: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567, current_aqi: 104, status: 'Moderate', dominant_pollutant: 'PM10', weather_desc: 'W 3.2 m/s · 27°C' },
   { name: 'Lucknow', state: 'Uttar Pradesh', lat: 26.8467, lng: 80.9462, current_aqi: 215, status: 'Very Poor', dominant_pollutant: 'PM2.5', weather_desc: 'NE 2.6 m/s · 29°C' },
   { name: 'Patna', state: 'Bihar', lat: 25.5941, lng: 85.1376, current_aqi: 238, status: 'Very Poor', dominant_pollutant: 'PM2.5', weather_desc: 'E 2.1 m/s · 30°C' },
+  { name: 'Ranchi', state: 'Jharkhand', lat: 23.3441, lng: 85.3096, current_aqi: 131, status: 'Moderate', dominant_pollutant: 'PM2.5', weather_desc: 'NE 2.9 m/s · 27°C' },
 ];
 
 let CURRENT_CITY = 'Delhi NCR';

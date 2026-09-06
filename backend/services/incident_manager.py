@@ -917,6 +917,8 @@ class IncidentManager:
                        metrics={"PM2.5": 140.0, "PM10": 268.0, "NO2": 68.0, "O3": 35.0, "SO2": 21.0}),
             RegionInfo(name="Patna", state="Bihar", lat=25.5941, lng=85.1376, current_aqi=238, status="Very Poor", dominant_pollutant="PM2.5", weather_desc="E 2.1 m/s · 30°C",
                        metrics={"PM2.5": 160.0, "PM10": 300.0, "NO2": 72.0, "O3": 33.0, "SO2": 24.0}),
+            RegionInfo(name="Ranchi", state="Jharkhand", lat=23.3441, lng=85.3096, current_aqi=131, status="Moderate", dominant_pollutant="PM2.5", weather_desc="NE 2.9 m/s · 27°C",
+                       metrics={"PM2.5": 74.0, "PM10": 148.0, "NO2": 41.0, "O3": 36.0, "SO2": 14.0}),
         ]
 
     def get_regional_forecast(self, city_or_region: str = "Delhi NCR") -> HourlyForecastResponse:

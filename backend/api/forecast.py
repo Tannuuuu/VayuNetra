@@ -16,7 +16,7 @@ async def list_regions():
 @router.get("/api/v1/forecast/hourly", response_model=HourlyForecastResponse, summary="Regional Hourly Forecast")
 @router.get("/api/forecast/hourly", response_model=HourlyForecastResponse, include_in_schema=False)
 async def get_hourly_forecast(
-    city: Optional[str] = Query("Delhi NCR", description="City name (e.g., Mumbai, Bengaluru, Kolkata, Delhi NCR, Chennai, Hyderabad, Ahmedabad, Pune, Lucknow, Patna)"),
+    city: Optional[str] = Query("Delhi NCR", description="City name (e.g., Mumbai, Bengaluru, Kolkata, Delhi NCR, Chennai, Hyderabad, Ahmedabad, Pune, Lucknow, Patna, Ranchi)"),
     region: Optional[str] = Query(None, description="Region alias"),
 ):
     """
