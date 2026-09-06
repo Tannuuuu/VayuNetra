@@ -198,6 +198,23 @@ docker build -t vayunetra . && docker run -p 8000:8000 vayunetra
 
 Then open **http://localhost:8000/dashboard**.
 
+### Public demo URL (shareable, no cloud account needed)
+
+Expose the container to the internet with a Cloudflare Quick Tunnel:
+
+```bash
+docker run -d --name vayunetra-tunnel --restart unless-stopped \
+  cloudflare/cloudflared:latest tunnel --no-autoupdate \
+  --url http://host.docker.internal:8000
+
+# get the public URL:
+docker logs vayunetra-tunnel | grep trycloudflare
+```
+
+You receive a URL like `https://<random>.trycloudflare.com` — the dashboard is then at `https://<random>.trycloudflare.com/dashboard`. Shareable with anyone while your machine is on. Note: the URL changes on every tunnel restart; for a permanent public deployment use Render/Railway with this Dockerfile instead.
+
+If the tunnel drops (laptop sleep etc.): `docker restart vayunetra-tunnel`, then fetch the new URL from its logs.
+
 ### Prerequisites (non-Docker)
 - Python 3.10, 3.11, 3.12, or 3.13
 - Git
