@@ -193,6 +193,8 @@ class RegionInfo(BaseModel):
     status: str
     dominant_pollutant: str = "PM2.5"
     weather_desc: str = "NW 3.6 m/s · 28°C"
+    # Live pollutant concentration snapshot (µg/m³ equivalents) driving dashboard metric bubbles
+    metrics: Dict[str, float] = Field(default_factory=dict)
 
 
 class HourlyForecastPoint(BaseModel):

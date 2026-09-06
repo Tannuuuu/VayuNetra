@@ -98,6 +98,33 @@ function router() {
   bindActions();
 }
 
+/* ========== REGION METRIC BUBBLES (live pollutant values per region) ========== */
+function _bubbleData(reg) {
+  const m = (reg && reg.metrics && Object.keys(reg.metrics).length) ? reg.metrics
+    : { 'PM2.5': 108, 'PM10': 245, 'NO2': 62, 'O3': 41 };
+  const total = (m['PM2.5'] || 0) + (m['PM10'] || 0) + (m['NO2'] || 0) + (m['O3'] || 0);
+  const pct = k => total > 0 ? Math.round(((m[k] || 0) / total) * 100) : 0;
+  return {
+    'O3':  { label: 'O₃',    pct: pct('O3'),    val: (m['O3'] || 0).toFixed(2) },
+    'NO2': { label: 'NO₂',   pct: pct('NO2'),   val: (m['NO2'] || 0).toFixed(2) },
+    'PM10':{ label: 'PM10',  pct: pct('PM10'),  val: (m['PM10'] || 0).toFixed(2) },
+    'PM2.5':{ label: 'PM2.5', pct: pct('PM2.5'), val: (m['PM2.5'] || 0).toFixed(0) },
+  };
+}
+
+function updateMetricBubbles(reg) {
+  const data = _bubbleData(reg);
+  const map = { bubbleO3: 'O3', bubbleNo2: 'NO2', bubblePm10: 'PM10', bubblePm25: 'PM2.5' };
+  Object.entries(map).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const pctEl = el.querySelector('.pct');
+    const valEl = el.querySelector('.val');
+    if (pctEl) pctEl.textContent = `${data[key].label} ${data[key].pct}%`;
+    if (valEl) valEl.textContent = data[key].val;
+  });
+}
+
 /* ========== REGION SWITCHER LOGIC ========== */
 async function switchRegion(cityName) {
   toast('Region Switching', `Loading live environmental telemetry for ${cityName}...`);
@@ -122,9 +149,17 @@ async function switchRegion(cityName) {
   if (aqiCity) aqiCity.textContent = forecastData.city;
   if (aqiStatus) aqiStatus.innerHTML = `⚠ ${forecastData.category}`;
 
+  // Update floating pollutant metric bubbles for the new region
+  updateMetricBubbles(reg);
+
   // Pan Map
   if (map && reg) {
     map.flyTo([reg.lat, reg.lng], 11, { duration: 1.2 });
+  }
+
+  // Re-render Air Maps markers with the new region's data
+  if (document.getElementById('fullMap')) {
+    renderAirMapLayers();
   }
 
   // Re-render Forecast Chart with new region's data
@@ -464,6 +499,7 @@ function applyActiveFilters() {
 /* ========== DASHBOARD VIEW ========== */
 function viewDashboard() {
   const reg = getRegion(CURRENT_CITY);
+  const bd = _bubbleData(reg);
   return `
   <div class="page" style="height:calc(100vh - 64px); display:flex; flex-direction:column; padding-bottom:16px;">
     <!-- Regional Quick Switch Bar -->
@@ -498,23 +534,23 @@ function viewDashboard() {
 
         <!-- Metric bubbles positioned over map -->
         <div class="bubble" id="bubbleO3" style="top:18%; left:22%; display:${ACTIVE_FILTERS.pollutants['O3'] ? 'flex' : 'none'};">
-          <div class="pct">O₃ 38%</div>
-          <div class="val">38.11</div>
+          <div class="pct">${bd['O3'].label} ${bd['O3'].pct}%</div>
+          <div class="val">${bd['O3'].val}</div>
           <div class="unit">µg/m³</div>
         </div>
         <div class="bubble" id="bubbleNo2" style="top:12%; left:48%; display:${ACTIVE_FILTERS.pollutants['NO2'] ? 'flex' : 'none'};">
-          <div class="pct">NO₂ 28%</div>
-          <div class="val">7.04</div>
+          <div class="pct">${bd['NO2'].label} ${bd['NO2'].pct}%</div>
+          <div class="val">${bd['NO2'].val}</div>
           <div class="unit">µg/m³</div>
         </div>
         <div class="bubble" id="bubblePm10" style="top:42%; left:38%; display:${ACTIVE_FILTERS.pollutants['PM10'] ? 'flex' : 'none'};">
-          <div class="pct">PM10 34%</div>
-          <div class="val">15.27</div>
+          <div class="pct">${bd['PM10'].label} ${bd['PM10'].pct}%</div>
+          <div class="val">${bd['PM10'].val}</div>
           <div class="unit">µg/m³</div>
         </div>
         <div class="bubble" id="bubblePm25" style="top:28%; left:62%; display:${ACTIVE_FILTERS.pollutants['PM2.5'] ? 'flex' : 'none'};">
-          <div class="pct" style="color:#ef4444">PM2.5 74%</div>
-          <div class="val" style="color:#ef4444">148</div>
+          <div class="pct" style="color:#ef4444">${bd['PM2.5'].label} ${bd['PM2.5'].pct}%</div>
+          <div class="val" style="color:#ef4444">${bd['PM2.5'].val}</div>
           <div class="unit">µg/m³</div>
         </div>
       </div>
@@ -555,8 +591,8 @@ function initMainMap(elId) {
   if (!el) return;
   const reg = getRegion(CURRENT_CITY);
   map = L.map(elId, { zoomControl: true }).setView([reg.lat, reg.lng], 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '© OSM © CARTO',
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
@@ -687,8 +723,8 @@ function initAirMap(elId) {
   if (!el) return;
   const reg = getRegion(CURRENT_CITY);
   map = L.map(elId, { zoomControl: true }).setView([reg.lat, reg.lng], 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '© OSM © CARTO',
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
@@ -712,8 +748,11 @@ function renderAirMapLayers() {
   if (ACTIVE_FILTERS.layers.footprints) {
     const footprintMarkers = [];
     EVENTS.forEach(e => {
-      // Filter by status & pollutant
-      if (!ACTIVE_FILTERS.statuses[e.status]) return;
+      // Filter by status & pollutant (CORROBORATED events count as active-filtered)
+      const statusKey = ACTIVE_FILTERS.statuses[e.status] !== undefined
+        ? e.status
+        : (e.status === 'CORROBORATED' ? 'ACTIVE' : 'CANDIDATE');
+      if (!ACTIVE_FILTERS.statuses[statusKey]) return;
       if (!ACTIVE_FILTERS.pollutants[e.pollutant]) return;
 
       eventCount++;
@@ -737,13 +776,16 @@ function renderAirMapLayers() {
     layerGroups.footprints = L.layerGroup(footprintMarkers).addTo(map);
   }
 
-  // 2. Sensors Layer
+  // 2. Sensors Layer (readings derived from live region metrics)
   if (ACTIVE_FILTERS.layers.sensors) {
+    const m = (reg && reg.metrics && Object.keys(reg.metrics).length) ? reg.metrics : { 'PM2.5': 108 };
+    const basePm = m['PM2.5'] || 108;
+    const baseAqi = reg.current_aqi || 186;
     const sensorList = [
-      { name: `${reg.name} Central CAAQMS`, lat: reg.lat, lon: reg.lng, pm25: 142, aqi: 186 },
-      { name: `${reg.name} North IoT Node`, lat: reg.lat + 0.04, lon: reg.lng + 0.02, pm25: 178, aqi: 220 },
-      { name: `${reg.name} South Industrial CAAQMS`, lat: reg.lat - 0.05, lon: reg.lng - 0.03, pm25: 198, aqi: 245 },
-      { name: `${reg.name} Corridor Transit Node`, lat: reg.lat + 0.02, lon: reg.lng - 0.04, pm25: 110, aqi: 160 },
+      { name: `${reg.name} Central CAAQMS`, lat: reg.lat, lon: reg.lng, pm25: basePm, aqi: baseAqi },
+      { name: `${reg.name} North IoT Node`, lat: reg.lat + 0.04, lon: reg.lng + 0.02, pm25: Math.round(basePm * 1.25), aqi: Math.round(baseAqi * 1.18) },
+      { name: `${reg.name} South Industrial CAAQMS`, lat: reg.lat - 0.05, lon: reg.lng - 0.03, pm25: Math.round(basePm * 1.38), aqi: Math.round(baseAqi * 1.32) },
+      { name: `${reg.name} Corridor Transit Node`, lat: reg.lat + 0.02, lon: reg.lng - 0.04, pm25: Math.round(basePm * 0.77), aqi: Math.round(baseAqi * 0.86) },
     ];
     sensorCount = sensorList.length;
     const sensorMarkers = sensorList.map(s => {
@@ -987,7 +1029,7 @@ function initEventMap(id) {
   const e = getEvent(id);
   if (!e) return;
   map = L.map('eventMap', { zoomControl: false, attributionControl: false }).setView([e.lat, e.lng], 13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
   const color = e.severity === 'critical' ? '#ef4444' : e.severity === 'high' ? '#f97316' : '#eab308';
   L.circle([e.lat, e.lng], { radius: 1400, color, fillColor: color, fillOpacity: 0.28, weight: 2 }).addTo(map);
   L.circleMarker([e.lat, e.lng], { radius: 8, color: '#fff', fillColor: color, fillOpacity: 1, weight: 2 }).addTo(map);
